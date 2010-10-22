@@ -1,0 +1,8 @@
+# .gitignore for go development directories
+_obj/
+_test/
+*.[685]
+*.a
+*.out
+_testmain.go
+
