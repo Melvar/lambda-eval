@@ -1,8 +1,16 @@
-# .gitignore for go development directories
+# .gitignore for go projects, based on what `make clean` with the standard go
+# Makefile inclusions removes.
+*.o
+*.a
+*.[568vq]
+[568vq].out
+*.cgo1.go
+*.cgo2.c
+_cgo_defun.c
+_cgo_gotypes.go
+_cgo_export.*
+*.so
 _obj/
 _test/
-*.[685]
-*.a
-*.out
 _testmain.go
-
+*.exe
