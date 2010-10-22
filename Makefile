@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-include /home/melvar/go/src/Make.inc
+include $(GOROOT)/src/Make.inc
 
 TARG=λeval
 GOFILES=\
 	lambda.go\
 
-include /home/melvar/go/src/Make.pkg
+include $(GOROOT)/src/Make.pkg
