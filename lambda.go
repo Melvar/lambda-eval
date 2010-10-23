@@ -7,7 +7,7 @@ package λeval
 import "fmt"
 
 /* An Expression is a node in the syntax tree. */
-type Expression interface{
+type Expression interface {
 	/* It can evaluate itself to some kind of minimal form */
 	Evaluate() Expression
 	/* It can cause all instances of a variable within it to be renamed */
@@ -19,7 +19,7 @@ type Expression interface{
 }
 
 /* A Variable represents a variable in a λ-expression. It’s basically just a
-	symbol. It implements Expression. */
+symbol. It implements Expression. */
 type Variable string
 
 /* Evaluate yields the Variable itself, since there is no way to reduce it. */
@@ -28,15 +28,19 @@ func (v Variable) Evaluate() Expression {
 }
 
 /* AlphaConvert yields the new name if the Variable is the one to replace,
-	otherwise it remains the same. */
+otherwise it remains the same. */
 func (v Variable) AlphaConvert(x, y Variable) Expression {
-	if string(v) == string(x) { return y }
+	if string(v) == string(x) {
+		return y
+	}
 	return v
 }
 
 /* Substituting a Variable is analogous to α-converting it. */
 func (t Variable) Substitute(v Variable, e Expression) Expression {
-	if string(t) == string(v) { return e }
+	if string(t) == string(v) {
+		return e
+	}
 	return t
 }
 
@@ -46,64 +50,64 @@ func (v Variable) String() string {
 }
 
 /* An Abstraction represents a λ-abstraction. For all intents and purposes, it
-	is a function, consisting of an argument and a body. */
-type Abstraction struct{
+is a function, consisting of an argument and a body. */
+type Abstraction struct {
 	Argument Variable
-	Body Expression
+	Body     Expression
 }
 
 /* Evaluate should yield the Abstraction with its body in simplest form, but
-	for now it just returns it. */
+for now it just returns it. */
 func (a Abstraction) Evaluate() Expression {
 	return a
 }
 
 /* AlphaConvert yields the Abstraction with its Argument and Body
-	AlphaConverted. For now, it can still capture variables. */
+AlphaConverted. For now, it can still capture variables. */
 func (a Abstraction) AlphaConvert(x, y Variable) Expression {
-	return Abstraction{ a.Argument.AlphaConvert(x, y), a.Body.AlphaConvert(x, y) } //TODO: Make non-capturing
+	return Abstraction{a.Argument.AlphaConvert(x, y), a.Body.AlphaConvert(x, y)} //TODO: Make non-capturing
 }
 
 /* Substitute yields the Abstraction with its Body Substituted. Its Argument is
-	not, since that cannot be any Expression but only a Variable. For now, it
-	can still capture variables. */
+not, since that cannot be any Expression but only a Variable. For now, it
+can still capture variables. */
 func (a Abstraction) Substitute(v Variable, e Expression) Expression {
-	return Abstraction{ a.Argument, a.Body.Substitute(v, e) } //TODO: Make non-capturing
+	return Abstraction{a.Argument, a.Body.Substitute(v, e)} //TODO: Make non-capturing
 }
 
 /* String returns the Abstraction formatted as in λ-calculus: “(λa.B)”, where
-	‘a’ is the Argument and ‘B’ is the Body. */
+‘a’ is the Argument and ‘B’ is the Body. */
 func (a Abstraction) String() string {
 	return fmt.Sprintf("(λ%v.%v)", a.Argument, a.Body)
 }
 
 /* An Application represents the application of a function to an argument. */
-type Application struct{
+type Application struct {
 	Function Expression
 	Argument Expression
 }
 
 /* This method is a stub. Evaluate yields the Evaluation of the result of
-	applying the Function to the Argument if the Evaluation of the Function is
-	an Abstraction, and itself with the Function Evaluated otherwise. */
+applying the Function to the Argument if the Evaluation of the Function is
+an Abstraction, and itself with the Function Evaluated otherwise. */
 func (a Application) Evaluate() Expression {
 	return a //TODO: stub
 }
 
 /* AlphaConvert returns the Application with its Function and Argument
-	AlphaConverted. */
+AlphaConverted. */
 func (a Application) AlphaConvert(x, y Variable) Expression {
-	return Application{ a.Function.AlphaConvert(x, y), a.Argument.AlphaConvert(x, y) }
+	return Application{a.Function.AlphaConvert(x, y), a.Argument.AlphaConvert(x, y)}
 }
 
 /* Substitute returns the Application with its Function and Argument
-	Substituted. */
+Substituted. */
 func (a Application) Substitute(v Variable, e Expression) Expression {
-	return Application{ a.Function.Substitute(v, e), a.Argument.Substitute(v, e) }
+	return Application{a.Function.Substitute(v, e), a.Argument.Substitute(v, e)}
 }
 
 /* String returns the Application formatted as in λ-calculus: “(F A)”, where
-	‘F’ is the Function and ‘A’ is the Argument. */
+‘F’ is the Function and ‘A’ is the Argument. */
 func (a Application) String() string {
 	return fmt.Sprintf("(%v %v)", a.Function, a.Argument)
 }
