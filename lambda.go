@@ -56,10 +56,9 @@ type Abstraction struct {
 	Body     Expression
 }
 
-/* Evaluate should yield the Abstraction with its body in simplest form, but
-for now it just returns it. */
+/* Evaluate yields the Abstraction with its body in simplest form. */
 func (a Abstraction) Evaluate() Expression {
-	return a
+	return Abstraction{ a.Argument, a.Body.Evaluate() }
 }
 
 /* AlphaConvert yields the Abstraction with its Argument and Body
