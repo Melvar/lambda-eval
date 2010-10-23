@@ -86,9 +86,9 @@ type Application struct {
 	Argument Expression
 }
 
-/* This method is a stub. Evaluate yields the Evaluation of the result of
-applying the Function to the Argument if the Evaluation of the Function is
-an Abstraction, and itself with the Function Evaluated otherwise. */
+/* Evaluate yields the Evaluation of the result of applying the Function to the
+Argument if the Evaluation of the Function is an Abstraction, and itself with
+the Function Evaluated otherwise. */
 func (a Application) Evaluate() Expression {
 	var f = a.Function.Evaluate()
 	if l, ok := f.(Abstraction); ok {
