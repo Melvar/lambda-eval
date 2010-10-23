@@ -90,7 +90,11 @@ type Application struct {
 applying the Function to the Argument if the Evaluation of the Function is
 an Abstraction, and itself with the Function Evaluated otherwise. */
 func (a Application) Evaluate() Expression {
-	return a //TODO: stub
+	var f = a.Function.Evaluate()
+	if l, ok := f.(Abstraction); ok {
+		return l.Body.Substitute(l.Argument, a.Argument).Evaluate()
+	}
+	return Application{ f, a.Argument }
 }
 
 /* AlphaConvert returns the Application with its Function and Argument
