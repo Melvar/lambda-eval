@@ -63,10 +63,9 @@ type Abstraction struct {
 	Body     Expression
 }
 
-/* Evaluate should yield the Abstraction with its body in simplest form, but
-for now it just returns it. */
+/* Evaluate yields the Abstraction with its body in simplest form. */
 func (a Abstraction) Evaluate() Expression {
-	return a
+	return Abstraction{ a.Argument, a.Body.Evaluate() }
 }
 
 /* AlphaConvert yields the Abstraction with its Argument and Body
@@ -100,11 +99,15 @@ type Application struct {
 	Argument Expression
 }
 
-/* This method is a stub. Evaluate yields the Evaluation of the result of
-applying the Function to the Argument if the Evaluation of the Function is
-an Abstraction, and itself with the Function Evaluated otherwise. */
+/* Evaluate yields the Evaluation of the result of applying the Function to the
+Argument if the Evaluation of the Function is an Abstraction, and itself with
+the Function Evaluated otherwise. */
 func (a Application) Evaluate() Expression {
-	return a //TODO: stub
+	var f = a.Function.Evaluate()
+	if l, ok := f.(Abstraction); ok {
+		return l.Body.Substitute(l.Argument, a.Argument).Evaluate()
+	}
+	return Application{ f, a.Argument }
 }
 
 /* AlphaConvert returns the Application with its Function and Argument
