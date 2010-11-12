@@ -10,8 +10,6 @@ import "fmt"
 type Expression interface {
 	/* It can evaluate itself to some kind of minimal form */
 	Evaluate() Expression
-	/* It can cause all instances of a variable within it to be renamed */
-	AlphaConvert(Variable, Variable) Expression
 	/* It can substitute a free variable within itself with an expression */
 	Substitute(Variable, Expression) Expression
 	/* Finally, it can make a string representation of itself */
@@ -27,16 +25,8 @@ func (v Variable) Evaluate() Expression {
 	return v
 }
 
-/* AlphaConvert yields the new name if the Variable is the one to replace,
-otherwise it remains the same. */
-func (v Variable) AlphaConvert(x, y Variable) Expression {
-	if string(v) == string(x) {
-		return y
-	}
-	return v
-}
-
-/* Substituting a Variable is analogous to α-converting it. */
+/* Substitute yields the Expression if the Variable is the one to replace, the
+same Variable otherwise. */
 func (t Variable) Substitute(v Variable, e Expression) Expression {
 	if string(t) == string(v) {
 		return e
@@ -61,10 +51,10 @@ func (a Abstraction) Evaluate() Expression {
 	return Abstraction{ a.Argument, a.Body.Evaluate() }
 }
 
-/* AlphaConvert yields the Abstraction with its Argument and Body
-AlphaConverted. For now, it can still capture variables. */
-func (a Abstraction) AlphaConvert(x, y Variable) Expression {
-	return Abstraction{a.Argument.AlphaConvert(x, y), a.Body.AlphaConvert(x, y)} //TODO: Make non-capturing
+/* AlphaConvert yields the Abstraction with its bound Variable replaced. For
+now, it can still capture variables. */
+func (a Abstraction) AlphaConvert(x Variable) Expression {
+	return Abstraction{ x, a.Body.Substitute(a.Argument, x) } //TODO: make non-capturing
 }
 
 /* Substitute yields the Abstraction with its Body Substituted. Its Argument is
@@ -95,12 +85,6 @@ func (a Application) Evaluate() Expression {
 		return l.Body.Substitute(l.Argument, a.Argument).Evaluate()
 	}
 	return Application{ f, a.Argument }
-}
-
-/* AlphaConvert returns the Application with its Function and Argument
-AlphaConverted. */
-func (a Application) AlphaConvert(x, y Variable) Expression {
-	return Application{a.Function.AlphaConvert(x, y), a.Argument.AlphaConvert(x, y)}
 }
 
 /* Substitute returns the Application with its Function and Argument
