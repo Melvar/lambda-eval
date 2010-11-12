@@ -14,6 +14,8 @@ type Expression interface {
 	AlphaConvert(Variable, Variable) Expression
 	/* It can substitute a free variable within itself with an expression */
 	Substitute(Variable, Expression) Expression
+	/* It can generate the set of its free variables */
+	FreeVariables() VarSet
 	/* Finally, it can make a string representation of itself */
 	fmt.Stringer
 }
@@ -42,6 +44,11 @@ func (t Variable) Substitute(v Variable, e Expression) Expression {
 		return e
 	}
 	return t
+}
+
+/* The set of free variables of a variable contains just that variable */
+func (v Variable) FreeVariables() VarSet {
+	return Singleton(v)
 }
 
 /* String returns the Variable’s identifying name. */
@@ -75,6 +82,12 @@ func (a Abstraction) Substitute(v Variable, e Expression) Expression {
 	return Abstraction{a.Argument, a.Body.Substitute(v, e)} //TODO: Make non-capturing
 }
 
+/* The set of free variables of an abstraction is the set of free variables of
+its body, minus its argument, which it binds. */
+func (a Abstraction) FreeVariables() VarSet {
+	return a.Body.FreeVariables().Without(a.Argument)
+}
+
 /* String returns the Abstraction formatted as in λ-calculus: “(λa.B)”, where
 ‘a’ is the Argument and ‘B’ is the Body. */
 func (a Abstraction) String() string {
@@ -104,6 +117,12 @@ func (a Application) AlphaConvert(x, y Variable) Expression {
 Substituted. */
 func (a Application) Substitute(v Variable, e Expression) Expression {
 	return Application{a.Function.Substitute(v, e), a.Argument.Substitute(v, e)}
+}
+
+/* The set of free variables of an Application is the union of the sets of free
+variables of each of its subterms. */
+func (a Application) FreeVariables() VarSet {
+	return a.Function.FreeVariables().Union(a.Argument.FreeVariables())
 }
 
 /* String returns the Application formatted as in λ-calculus: “(F A)”, where
