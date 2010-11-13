@@ -61,6 +61,9 @@ func (a Abstraction) AlphaConvert(x Variable) Expression {
 not, since that cannot be any Expression but only a Variable. For now, it
 can still capture variables. */
 func (a Abstraction) Substitute(v Variable, e Expression) Expression {
+	if v == a.Argument {
+		return a
+	}
 	return Abstraction{a.Argument, a.Body.Substitute(v, e)} //TODO: Make non-capturing
 }
 
