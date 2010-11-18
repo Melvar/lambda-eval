@@ -12,6 +12,8 @@ type Expression interface {
 	Evaluate() Expression
 	/* It can substitute a free variable within itself with an expression */
 	Substitute(Variable, Expression) Expression
+	/* It can check whether a given Variable is free in it */
+	ContainsFree(Variable) bool
 	/* Finally, it can make a string representation of itself */
 	fmt.Stringer
 }
@@ -32,6 +34,11 @@ func (t Variable) Substitute(v Variable, e Expression) Expression {
 		return e
 	}
 	return t
+}
+
+/* Containsfree returns true if this is the Variable being asked about. */
+func (t Variable) ContainsFree(v Variable) bool {
+	return t == v
 }
 
 /* String returns the Variable’s identifying name. */
@@ -67,6 +74,12 @@ func (a Abstraction) Substitute(v Variable, e Expression) Expression {
 	return Abstraction{a.Argument, a.Body.Substitute(v, e)} //TODO: Make non-capturing
 }
 
+/* Containsfree yields true if the Variable asked about is free in the Body,
+but is not the one bound by the Abstraction */
+func (a Abstraction) ContainsFree(v Variable) bool {
+	return a.Argument != v && a.Body.ContainsFree(v)
+}
+
 /* String returns the Abstraction formatted as in λ-calculus: “(λa.B)”, where
 ‘a’ is the Argument and ‘B’ is the Body. */
 func (a Abstraction) String() string {
@@ -94,6 +107,11 @@ func (a Application) Evaluate() Expression {
 Substituted. */
 func (a Application) Substitute(v Variable, e Expression) Expression {
 	return Application{a.Function.Substitute(v, e), a.Argument.Substitute(v, e)}
+}
+
+/* ContainsFree returns true if the Variable is free in either subexpression */
+func (a Application) ContainsFree(v Variable) bool {
+	return a.Function.ContainsFree(v) || a.Argument.ContainsFree(v)
 }
 
 /* String returns the Application formatted as in λ-calculus: “(F A)”, where
