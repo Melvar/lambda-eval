@@ -66,7 +66,7 @@ func (a Abstraction) Substitute(v Variable, e Expression) Expression {
 		return a
 	}
 	var n = a.Argument
-	for e.Containsfree(n) {
+	for e.ContainsFree(n) {
 		n += "′"
 	}
 	return Abstraction{n, a.Body.Substitute(a.Argument, n).Substitute(v, e)}
