@@ -28,7 +28,7 @@ func (v Variable) Evaluate() Expression {
 /* Substitute yields the Expression if the Variable is the one to replace, the
 same Variable otherwise. */
 func (t Variable) Substitute(v Variable, e Expression) Expression {
-	if string(t) == string(v) {
+	if t == v {
 		return e
 	}
 	return t
