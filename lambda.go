@@ -58,20 +58,18 @@ func (a Abstraction) Evaluate() Expression {
 	return Abstraction{a.Argument, a.Body.Evaluate()}
 }
 
-/* AlphaConvert yields the Abstraction with its bound Variable replaced. For
-now, it can still capture variables. */
-func (a Abstraction) AlphaConvert(x Variable) Expression {
-	return Abstraction{x, a.Body.Substitute(a.Argument, x)} //TODO: make non-capturing
-}
-
-/* Substitute yields the Abstraction with its Body Substituted. Its Argument is
-not, since that cannot be any Expression but only a Variable. For now, it
-can still capture variables. */
+/* Substitute yields the Abstraction with its Body Substituted. If necessary,
+the Argument is changed (the Abstraction α-converted) to prevent capture of a
+Variable free in the Expression. */
 func (a Abstraction) Substitute(v Variable, e Expression) Expression {
 	if v == a.Argument {
 		return a
 	}
-	return Abstraction{a.Argument, a.Body.Substitute(v, e)} //TODO: Make non-capturing
+	var n = a.Argument
+	for e.Containsfree(n) {
+		n += "′"
+	}
+	return Abstraction{n, a.Body.Substitute(a.Argument, n).Substitute(v, e)}
 }
 
 /* Containsfree yields true if the Variable asked about is free in the Body,
