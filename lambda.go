@@ -48,13 +48,13 @@ type Abstraction struct {
 
 /* Evaluate yields the Abstraction with its body in simplest form. */
 func (a Abstraction) Evaluate() Expression {
-	return Abstraction{ a.Argument, a.Body.Evaluate() }
+	return Abstraction{a.Argument, a.Body.Evaluate()}
 }
 
 /* AlphaConvert yields the Abstraction with its bound Variable replaced. For
 now, it can still capture variables. */
 func (a Abstraction) AlphaConvert(x Variable) Expression {
-	return Abstraction{ x, a.Body.Substitute(a.Argument, x) } //TODO: make non-capturing
+	return Abstraction{x, a.Body.Substitute(a.Argument, x)} //TODO: make non-capturing
 }
 
 /* Substitute yields the Abstraction with its Body Substituted. Its Argument is
@@ -87,7 +87,7 @@ func (a Application) Evaluate() Expression {
 	if l, ok := f.(Abstraction); ok {
 		return l.Body.Substitute(l.Argument, a.Argument).Evaluate()
 	}
-	return Application{ f, a.Argument }
+	return Application{f, a.Argument}
 }
 
 /* Substitute returns the Application with its Function and Argument
