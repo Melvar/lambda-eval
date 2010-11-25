@@ -1,6 +1,5 @@
 /*	This package contains types and methods for representing and evaluating
-	expressions of λ-calculus. It may, in the future, include a parser, or a
-	parser may be written as a separate package.
+	expressions of λ-calculus. A recursive descent parser has been begun.
 */
 package λeval
 
