@@ -16,7 +16,7 @@ func TestPrint(t *testing.T) {
 	}
 }
 
-var redex = Application{Application{Abstraction{Variable("a"),Abstraction{Variable("b"),Application{Application{Variable("a"),Variable("a")},Variable("b")}}},Abstraction{Variable("x"),Abstraction{Variable("y"),Variable("y")}}},Abstraction{Variable("x"),Abstraction{Variable("y"),Variable("x")}}}
+var redex = Application{Application{Abstraction{Variable("a"), Abstraction{Variable("b"), Application{Application{Variable("a"), Variable("a")}, Variable("b")}}}, Abstraction{Variable("x"), Abstraction{Variable("y"), Variable("y")}}}, Abstraction{Variable("x"), Abstraction{Variable("y"), Variable("x")}}}
 
 var reductregexstr = `\(λ(.)\.\(λ(.)\.(.)\)\)`
 var reductexamplestr = "(λx.(λy.x))"
