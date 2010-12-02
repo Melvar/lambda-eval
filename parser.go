@@ -12,8 +12,9 @@ import (
 const (
 	_ = -iota
 	end
-	error
 	vari
+	begin
+	error  = utf8.RuneError
 	lambda = 'λ'
 	lpar   = '('
 	rpar   = ')'
@@ -24,6 +25,7 @@ const typestring map[int]string = map[int]string{
 	end:   "end",
 	error: "error",
 	vari:  "variable",
+	begin: "beginning",
 }
 
 const defLexBufLen = 256
@@ -54,15 +56,15 @@ type Lexer struct {
 }
 
 func NewLexer(r io.Reader) *Lexer {
-	var l = &Lexer{r, make([]byte, defLexBufLen)}
-	if err := l.Next(); err != nil {
-		//TODO: Figure out a way to handle this.
-	}
-	return l
+	return &Lexer{r, false, make([]byte, defLexBufLen), 0, Token{begin, nil}}
 }
 
 func (l *Lexer) Current() Token {
 	return l.current
+}
+
+func nonVarRune(rune int) bool {
+	return !(unicode.IsLetter(rune) || unicode.IsDigit(rune))
 }
 
 func (l *Lexer) Next() os.Error {
@@ -70,7 +72,7 @@ func (l *Lexer) Next() os.Error {
 		copy(l.buf, l.buf[l.pos:])
 		if n, err := io.ReadFull(l.rd, l.buf[len(l.buf)-l.pos:]); n < l.pos {
 			if !(err == io.ErrUnexpectedEOF || err == os.EOF) {
-				l.current = Token{error}
+				l.current = Token{error, &err.String()}
 			}
 			l.rdEmpty = true
 			l.buf = l.buf[:len(l.buf)-l.pos+n]
@@ -78,5 +80,47 @@ func (l *Lexer) Next() os.Error {
 		}
 		l.pos = 0
 	}
-	//XXX Continue here
+	if l.pos >= len(l.buf) {
+		l.current = Token{end, nil}
+		return os.EOF
+	}
+	var nextrune, nextwidth = utf8.DecodeRune(l.buf[l.pos:])
+	if nextwidth < 1 {
+		l.current = Token{error, &"decoding error"}
+		return l.current
+	}
+	switch nextrune {
+		case lambda, lpar, rpar, dot:
+			l.pos += nextwidth
+			l.current = Token{nextrune, nil}
+			return nil
+		default:
+			switch {
+				case unicode.IsSpace
+				case unicode.IsLetter(nextrune):
+					var endVar = bytes.IndexFunc(l.buf[l.pos:], nonVarRune)
+					for (endVar < 0) {
+						var newbuf = make([]byte, 2*len(l.buf))
+						copy(newbuf, l.buf[l.pos:]
+						if n, err := io.ReadFull(l.rd, l.buf[len(l.buf)-l.pos:]); n < l.pos {
+							if !(err == io.ErrUnexpectedEOF || err == os.EOF) {
+								l.current = Token{error, &err.String()}
+							}
+							l.rdEmpty = true
+							l.buf = l.buf[:len(l.buf)-l.pos+n]
+							return err
+						}
+						l.pos = 0
+						l.buf = newbuf
+						endVar = bytes.IndexFunc(l.buf[l.pos:], nonVarRune)
+					}
+					l.pos = endVar
+					l.current = Token{vari, &string(l.buf[l.pos:endVar])}
+					return nil
+				default:
+					l.pos += nextwidth
+					l.current = Token{error, &string(nextrune)}
+					return l.current
+			}
+	}
 }
