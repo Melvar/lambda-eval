@@ -11,21 +11,21 @@ import (
 
 const (
 	_ = -iota
-	end
-	vari
-	begin
-	error  = utf8.RuneError
-	lambda = 'λ'
-	lpar   = '('
-	rpar   = ')'
-	dot    = '.'
+	End
+	Var
+	Begin
+	Error  = utf8.RuneError
+	Lambda = 'λ'
+	LPar   = '('
+	RPar   = ')'
+	Dot    = '.'
 )
 
 const typestring map[int]string = map[int]string{
-	end:   "end",
-	error: "error",
-	vari:  "variable",
-	begin: "beginning",
+	End:   "End",
+	Error: "Error",
+	Var:   "Variable",
+	Begin: "Beginning",
 }
 
 const defLexBufLen = 256
@@ -56,7 +56,7 @@ type Lexer struct {
 }
 
 func NewLexer(r io.Reader) *Lexer {
-	return &Lexer{r, false, make([]byte, defLexBufLen), 0, Token{begin, nil}}
+	return &Lexer{r, false, make([]byte, defLexBufLen), 0, Token{Begin, nil}}
 }
 
 func (l *Lexer) Current() Token {
@@ -72,7 +72,7 @@ func (l *Lexer) Next() os.Error {
 		copy(l.buf, l.buf[l.pos:])
 		if n, err := io.ReadFull(l.rd, l.buf[len(l.buf)-l.pos:]); n < l.pos {
 			if !(err == io.ErrUnexpectedEOF || err == os.EOF) {
-				l.current = Token{error, &err.String()}
+				l.current = Token{Error, &err.String()}
 			}
 			l.rdEmpty = true
 			l.buf = l.buf[:len(l.buf)-l.pos+n]
@@ -81,22 +81,22 @@ func (l *Lexer) Next() os.Error {
 		l.pos = 0
 	}
 	if l.pos >= len(l.buf) {
-		l.current = Token{end, nil}
+		l.current = Token{End, nil}
 		return os.EOF
 	}
 	var nextrune, nextwidth = utf8.DecodeRune(l.buf[l.pos:])
 	if nextwidth < 1 {
-		l.current = Token{error, &"decoding error"}
+		l.current = Token{Error, &"decoding error"}
 		return l.current
 	}
 	switch nextrune {
-		case lambda, lpar, rpar, dot:
+		case Lambda, LPar, RPar, Dot:
 			l.pos += nextwidth
 			l.current = Token{nextrune, nil}
 			return nil
 		default:
 			switch {
-				case unicode.IsSpace
+				case unicode.IsSpace:
 				case unicode.IsLetter(nextrune):
 					var endVar = bytes.IndexFunc(l.buf[l.pos:], nonVarRune)
 					for (endVar < 0) {
@@ -104,7 +104,7 @@ func (l *Lexer) Next() os.Error {
 						copy(newbuf, l.buf[l.pos:]
 						if n, err := io.ReadFull(l.rd, l.buf[len(l.buf)-l.pos:]); n < l.pos {
 							if !(err == io.ErrUnexpectedEOF || err == os.EOF) {
-								l.current = Token{error, &err.String()}
+								l.current = Token{Error, &err.String()}
 							}
 							l.rdEmpty = true
 							l.buf = l.buf[:len(l.buf)-l.pos+n]
@@ -115,11 +115,11 @@ func (l *Lexer) Next() os.Error {
 						endVar = bytes.IndexFunc(l.buf[l.pos:], nonVarRune)
 					}
 					l.pos = endVar
-					l.current = Token{vari, &string(l.buf[l.pos:endVar])}
+					l.current = Token{Var, &string(l.buf[l.pos:endVar])}
 					return nil
 				default:
 					l.pos += nextwidth
-					l.current = Token{error, &string(nextrune)}
+					l.current = Token{Error, &string(nextrune)}
 					return l.current
 			}
 	}
